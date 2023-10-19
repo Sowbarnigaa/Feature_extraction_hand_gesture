@@ -479,7 +479,7 @@ class ICVLImporter(DepthImporter):
 
         # Load the dataset
         objdir = '{}/Depth/'.format(self.basepath)
-        trainlabels = '{}/icvl_train_list.txt'.format(self.basepath)
+        trainlabels = '{}/labels.txt'.format(self.basepath)
         
         f=open("icvl_train_list.txt", "r")
         ll=f.readlines()
