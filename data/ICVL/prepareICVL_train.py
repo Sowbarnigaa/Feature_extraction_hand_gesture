@@ -467,6 +467,7 @@ class ICVLImporter(DepthImporter):
         """
         print(self)
         print(seqName)        
+        print("hi")
 
         if (subSeq is not None) and (not isinstance(subSeq, list)):
             raise TypeError("subSeq must be None or list")
