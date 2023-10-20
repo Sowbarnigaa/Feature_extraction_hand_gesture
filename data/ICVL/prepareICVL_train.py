@@ -465,6 +465,8 @@ class ICVLImporter(DepthImporter):
         :param Nmax: maximum number of samples to load
         :return: returns named image sequence
         """
+        print(self)
+        print(seqName)        
 
         if (subSeq is not None) and (not isinstance(subSeq, list)):
             raise TypeError("subSeq must be None or list")
