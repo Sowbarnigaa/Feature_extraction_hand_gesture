@@ -140,7 +140,7 @@ if __name__ == '__main__':
         
     elif args.dataset=="icvl":
         print("ICVL dataset will be used")
-        test_set=ICVLHandPoseDataset(train=False,basepath=os.environ.get('ICVL_PATH'),center_refined=args.center_refined)
+        test_set=ICVLHandPoseDataset(train=False,basepath='/kaggle/working/TriHorn-Net/data/ICVL',center_refined=args.center_refined)
 
     elif args.dataset=="msra":
         print("MSRA dataset will be used")
