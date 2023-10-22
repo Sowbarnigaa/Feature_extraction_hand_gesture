@@ -149,7 +149,7 @@ if __name__ == '__main__':
 
     eval_function = get_EvalFunction(setting)
 
-    names, errors3D = []
+    names, errors3D = [],[]
 
     best_prediction_UVD = None
 
