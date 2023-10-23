@@ -19,20 +19,44 @@ class AdaptiveSpatialSoftmaxLayer(nn.Module):
         
         self.spread.requires_grad=bool(train_spread)
 
-
+    
     def forward(self, x):
         # the input is a tensor of shape (batch,num_channel,height,width)
-        SpacialSoftmax = nn.Softmax(dim=2)
-        num_batch=x.shape[0]
-        num_channel=x.shape[1]
-        height=x.shape[2]
-        width=x.shape[3]
-        inp=x.view(num_batch,num_channel,-1)
-        #if self.spread is not None:
-        res=torch.mul(inp,self.spread)
-        res=SpacialSoftmax(res)
+        SpatialSoftmax = nn.Softmax(dim=2)
+        num_batch = x.shape[0]
+        num_channel = x.shape[1]
+        height = x.shape[2]
+        width = x.shape[3]
+
+        # Applying self-attention mechanism
+        query = x.view(num_batch, num_channel, -1)
+        key = x.view(num_batch, num_channel, -1)
+        value = x.view(num_batch, num_channel, -1)
+
+        # Compute the attention scores
+        attention_scores = torch.bmm(query.transpose(1, 2), key)
+        attention_scores_scaled = attention_scores / np.sqrt(x.size(-1))
+        attention_weights = SpatialSoftmax(attention_scores_scaled)
         
-        return res.reshape(num_batch,num_channel,height,width)
+        # Apply the attention weights to the value
+        attended_value = torch.bmm(value, attention_weights.transpose(1, 2))
+        
+        # Reshape and return
+        return attended_value.view(num_batch, num_channel, height, width)
+
+    # def forward(self, x):
+    #     # the input is a tensor of shape (batch,num_channel,height,width)
+    #     SpacialSoftmax = nn.Softmax(dim=2)
+    #     num_batch=x.shape[0]
+    #     num_channel=x.shape[1]
+    #     height=x.shape[2]
+    #     width=x.shape[3]
+    #     inp=x.view(num_batch,num_channel,-1)
+    #     #if self.spread is not None:
+    #     res=torch.mul(inp,self.spread)
+    #     res=SpacialSoftmax(res)
+        
+    #     return res.reshape(num_batch,num_channel,height,width)
 
 
 class Bottleneck(nn.Module):
