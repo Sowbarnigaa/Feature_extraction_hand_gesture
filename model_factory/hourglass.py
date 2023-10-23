@@ -209,7 +209,7 @@ class HourglassNet(nn.Module):
                 bn,
                 self.relu,
             )
-     def forward(self, x, return_heatmap=False):
+    def forward(self, x, return_heatmap=False):
         out = []
         outD= []
         self.Xs = self.Xs.to(x.device)
