@@ -21,6 +21,8 @@ class AdaptiveSpatialSoftmaxLayer(nn.Module):
 
     
     def forward(self, x):
+        print("fwd called")
+        
         # the input is a tensor of shape (batch,num_channel,height,width)
         SpatialSoftmax = nn.Softmax(dim=2)
         num_batch = x.shape[0]
@@ -102,6 +104,7 @@ class Bottleneck(nn.Module):
 class Hourglass(nn.Module):
     def __init__(self, block, num_blocks, planes, depth,BN,num_G):
         super(Hourglass, self).__init__()
+        print("Hourglass init")
         self.depth = depth
         self.block = block
         self.BN = BN
@@ -153,6 +156,7 @@ class HourglassNet(nn.Module):
         self.soft0=AdaptiveSpatialSoftmaxLayer(train_spread=train_spread,num_channel=num_classes)#.cuda()#to(device)
         if num_stacks>1:
             self.soft1=AdaptiveSpatialSoftmaxLayer(train_spread=train_spread,num_channel=num_classes)#.cuda()#to(device)
+        print("HourglassNet init")
         self.Xs=GetValuesX()
         self.Ys=GetValuesY()
         
@@ -205,8 +209,7 @@ class HourglassNet(nn.Module):
                 bn,
                 self.relu,
             )
-
-    def forward(self, x , return_heatmap=False):
+     def forward(self, x, return_heatmap=False):
         out = []
         outD= []
         self.Xs = self.Xs.to(x.device)
@@ -221,15 +224,41 @@ class HourglassNet(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
 
+        # Applying the attention mechanism
+        x = self.soft0(x)  # Applying attention mechanism
+
         y = self.hg(x)
 
-        
         if return_heatmap:
-            UVD,hmp = self.estimator(y,return_heatmap = True)
-            return UVD,hmp
+            UVD, hmp = self.estimator(y, return_heatmap=True)
+            return UVD, hmp
 
         UVD = self.estimator(y)
         return UVD
+    # def forward(self, x , return_heatmap=False):
+    #     out = []
+    #     outD= []
+    #     self.Xs = self.Xs.to(x.device)
+    #     self.Ys = self.Ys.to(x.device)
+
+    #     x = self.conv1(x)
+    #     x = self.bn1(x)
+    #     x = self.relu(x)
+
+    #     x = self.layer1(x)
+    #     x = self.maxpool(x)
+    #     x = self.layer2(x)
+    #     x = self.layer3(x)
+
+    #     y = self.hg(x)
+
+        
+    #     if return_heatmap:
+    #         UVD,hmp = self.estimator(y,return_heatmap = True)
+    #         return UVD,hmp
+
+    #     UVD = self.estimator(y)
+    #     return UVD
 
      
 
