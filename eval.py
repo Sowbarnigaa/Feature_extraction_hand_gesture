@@ -70,6 +70,7 @@ def evaluate(model_path, model_name, loader, args, test_set, OutputToPred, print
         output_message = output_message + "\nUVD_Cropped:\n" + res + "\n###############################\n"
         
     output_message = output_message + f"\nThe error UVD in the cropped version = {Evaluator.getMeanError():.3f}\n" + "###############################\n"
+    output_message = output_message + f"\nThe MAE  UVD in the cropped version = {Evaluator.get_mean_absolute_error():.3f}\n" + "###############################\n"
 
     prediction_UVDorig = CropToOriginal(estimation_cropped, GT_matrix.float())
     del estimation_cropped, GT_matrix
@@ -80,7 +81,7 @@ def evaluate(model_path, model_name, loader, args, test_set, OutputToPred, print
         output_message = output_message + "\nUVD_Original:\n" + res + "\n###############################\n"
         
     output_message = output_message + f"\nThe error in Original UVD = {Evaluator.getMeanError():.3f}\n" + "###############################\n"
-
+    output_message = output_message + f"\nThe MAE  Original UVD = {Evaluator.get_mean_absolute_error():.3f}\n" + "###############################\n"
     estimation_xyz = test_set.convert_uvd_to_xyz_tensor(prediction_UVDorig)
     Evaluator.update(estimation_xyz, GT_3D_orig)
 
@@ -89,7 +90,7 @@ def evaluate(model_path, model_name, loader, args, test_set, OutputToPred, print
         output_message = output_message + "\n3D results:\n" + res + "\n###############################\n"
 
     final_3Derror = Evaluator.getMeanError()
-
+    final_3Derror = Evaluator.get_mean_absolute_error()
     output_message = output_message + f"\nFinal 3D error results: {final_3Derror:.3f}\n\n" + 100 * "=" + "\n"
 
     if save_features:
