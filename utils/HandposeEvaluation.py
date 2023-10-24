@@ -18,7 +18,11 @@ class HandposeEvaluation(object):
         :return: mean error
         """
         return np.nanmean(np.nanmean(np.sqrt(np.square(self.gt - self.joints).sum(axis=2)), axis=1))
-    
+    def get_mean_absolute_error(self):
+        absolute_errors = torch.abs(self.gt - self.joints).sum(dim=2).sqrt()
+        sequence_mae = absolute_errors.mean(dim=1)
+        mean_error = sequence_mae.mean().item()
+        return mean_error
     def GetMeanErrorPerJoint(self):
         d=np.abs(self.gt-self.joints)
         distances=np.linalg.norm(d,axis=2)
