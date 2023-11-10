@@ -39,7 +39,7 @@ def save_model(model, optimizer, scheduler, args):
 
 
 def main(args):
-        
+    args.model_path = "/kaggle/input/trihorn-saved-models-3d-points-gen/savedModel_E40.pt"
     if os.path.exists(args.checkpoints_dir):
         print("checkpoint dir already exists")
     else:
