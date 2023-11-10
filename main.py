@@ -39,7 +39,7 @@ def save_model(model, optimizer, scheduler, args):
 
 
 def main(args):
-    args.model_path = "/kaggle/input/trihorn-saved-models-3d-points-gen/savedModel_E40.pt"
+        
     if os.path.exists(args.checkpoints_dir):
         print("checkpoint dir already exists")
     else:
@@ -60,20 +60,18 @@ def main(args):
     if args.paralelization_type == "DDP" and is_main_process():
         # Save the model only in the master process
         save_model(model, optimizer, scheduler, args)
-        
-def load_checkpoint(model, args, optimizer, scheduler, device):
-    checkpoint = torch.load(args.model_path, map_location=device)
-    model.load_state_dict(checkpoint['state_dict'])
-    print(f"Checkpoint loaded from: {args.model_path}")
-
+      
 
 def main_worker(gpu, ngpus_per_node, args, current_node_GPU_counts):
     
     ########################## Model ##########################
     
-    rank = -1
-    model = model_builder(args.model_name, num_joints=DATASET_NUM_JOINTS[args.dataset], args=args)
-    device_IDs = [int(i) for i in args.device_IDs.split(",")]
+    rank=-1
+   
+    model= model_builder(args.model_name,num_joints=DATASET_NUM_JOINTS[args.dataset], args = args)
+    
+    device_IDs=[int(i) for i in args.device_IDs.split(",")]
+        
     default_cuda_id = "cuda:{}".format(args.default_cuda_id)
 
     
@@ -113,70 +111,65 @@ def main_worker(gpu, ngpus_per_node, args, current_node_GPU_counts):
         model = model.cuda()
 
     
-    # # supress print if it is not the master process       
-    # if not is_main_process():
-    #     def print_pass(*args):
-    #         pass
-    #     builtins.print = print_pass
-    # else:
-    #     if args.use_logger:
-    #         print("Logger will be used!")
-    #         logger = getLogger(save_path = None, name = "Main", level = "INFO")
-    #         builtins.print =  logger.info
+    # supress print if it is not the master process       
+    if not is_main_process():
+        def print_pass(*args):
+            pass
+        builtins.print = print_pass
+    else:
+        if args.use_logger:
+            print("Logger will be used!")
+            logger = getLogger(save_path = None, name = "Main", level = "INFO")
+            builtins.print =  logger.info
     
-    # print("\n"+"##"*15 + "\n" + str(args) + "\n\n" + "##"*15 + "\n")
+    print("\n"+"##"*15 + "\n" + str(args) + "\n\n" + "##"*15 + "\n")
         
-    # print(f" World_size =  {get_world_size()} !!!")
+    print(f" World_size =  {get_world_size()} !!!")
 
-    # if args.clip_max_norm > 0:
-    #     print("Gradient Clipping will be used")
+    if args.clip_max_norm > 0:
+        print("Gradient Clipping will be used")
         
 
-    # ########################## Dataset and Optimizer ##########################
+    ########################## Dataset and Optimizer ##########################
 
-    # data_loaders = {}
+    data_loaders = {}
 
-    # labled_train, unlabeled_train = DATA_Getters(args)
+    labled_train, unlabeled_train = DATA_Getters(args)
     
-    # labeled_sampler = torch.utils.data.distributed.DistributedSampler(labled_train) if args.paralelization_type=="DDP" else None
+    labeled_sampler = torch.utils.data.distributed.DistributedSampler(labled_train) if args.paralelization_type=="DDP" else None
         
-    # data_loaders["trainloader_labeled"] = torch.utils.data.DataLoader( labled_train, batch_size=args.batch_size,
-    #            shuffle=(labeled_sampler is None), num_workers=args.num_workers, pin_memory=True,
-    #            sampler=labeled_sampler, drop_last=True)
+    data_loaders["trainloader_labeled"] = torch.utils.data.DataLoader( labled_train, batch_size=args.batch_size,
+               shuffle=(labeled_sampler is None), num_workers=args.num_workers, pin_memory=True,
+               sampler=labeled_sampler, drop_last=True)
 
   
-    # data_loaders["trainloader_unlabeled"] = None
+    data_loaders["trainloader_unlabeled"] = None
 
     
-    # optimizer = get_optimizer(args.optimizer, model, args)
+    optimizer = get_optimizer(args.optimizer, model, args)
 
-    # scheduler = get_scheduler(optimizer, args)
+    scheduler = get_scheduler(optimizer, args)
         
-    # lossFunction = get_lossFunction(args.LossFunction)
+    lossFunction = get_lossFunction(args.LossFunction)
     
-    # torch.backends.cudnn.benchmark = True
+    torch.backends.cudnn.benchmark = True
 
-    # fp16_scaler = None
-    # if args.use_fp16:
-    #     fp16_scaler = torch.cuda.amp.GradScaler()
-    #     print("fp16_scaler being used!")
+    fp16_scaler = None
+    if args.use_fp16:
+        fp16_scaler = torch.cuda.amp.GradScaler()
+        print("fp16_scaler being used!")
         
+
     if args.model_path is not None:
-        load_checkpoint(model, args, None, None, None)
-        
-    print(f"Pre-trained Model loaded from: {args.model_path}")
-    print(f"Model to be used: {args.model_name}")
-    # if args.model_path is not None:
-    #     load_checkpoint(model, args , optimizer, scheduler, device)
+        load_checkpoint(model, args , optimizer, scheduler, device)
     
 
-    # print(f"Model to be trained: {args.model_name}")
-    # print(f"# Params: {sum(p.numel() for p in model.parameters() if p.requires_grad)/1e6:.2f}M")
+    print(f"Model to be trained: {args.model_name}")
+    print(f"# Params: {sum(p.numel() for p in model.parameters() if p.requires_grad)/1e6:.2f}M")
 
 ########################## Main Loop ##########################
-    # Train(model, data_loaders, args,lossFunction,optimizer,device,scheduler, fp16_scaler, rank)
-    Train(model, data_loaders, args, lossFunction, optimizer, device, scheduler, fp16_scaler, rank)
-    print('Finished Training')
+    Train(model, data_loaders, args,lossFunction,optimizer,device,scheduler, fp16_scaler, rank)
+
     
          
     print('Finished Training')
