@@ -13,6 +13,30 @@ from config import *
 from utils.utils import *
 from engine import Train
 
+def save_model(model, optimizer, scheduler, args):
+    # Convert PyTorch model parameters to NumPy arrays
+    model_state_dict_np = {key: value.cpu().numpy() for key, value in model.state_dict().items()}
+    optimizer_state_dict_np = {key: value.cpu().numpy() for key, value in optimizer.state_dict().items()}
+    scheduler_state_dict_np = {key: value.cpu().numpy() for key, value in scheduler.state_dict().items()}
+
+    # Create an HDF5 file
+    save_path_h5 = os.path.join(args.checkpoints_dir, 'model_checkpoint.h5')
+    with h5py.File(save_path_h5, 'w') as f:
+        # Save the model parameters to the HDF5 file
+        for key, value in model_state_dict_np.items():
+            f.create_dataset(f'model/{key}', data=value)
+
+        # Save optimizer and scheduler state
+        for key, value in optimizer_state_dict_np.items():
+            f.create_dataset(f'optimizer/{key}', data=value)
+        for key, value in scheduler_state_dict_np.items():
+            f.create_dataset(f'scheduler/{key}', data=value)
+
+        # Save other necessary information
+        f.create_dataset('args', data=np.array(args))
+
+    print(f'Model saved at: {save_path_h5}')
+
 
 def main(args):
         
@@ -32,7 +56,10 @@ def main(args):
         mp.spawn(main_worker, nprocs=current_node_GPU_counts, args=(ngpus_per_node, args, current_node_GPU_counts))
     else:
         main_worker(int(args.default_cuda_id), ngpus_per_node, args , current_node_GPU_counts)
-
+    
+    if args.paralelization_type == "DDP" and is_main_process():
+        # Save the model only in the master process
+        save_model(model, optimizer, scheduler, args)
       
 
 def main_worker(gpu, ngpus_per_node, args, current_node_GPU_counts):
