@@ -166,6 +166,14 @@ def main_worker(gpu, ngpus_per_node, args, current_node_GPU_counts):
 
     print(f"Model to be trained: {args.model_name}")
     print(f"# Params: {sum(p.numel() for p in model.parameters() if p.requires_grad)/1e6:.2f}M")
+    print("Parameter details")
+    for name, param in model.named_parameters():
+        if param.requires_grad:
+            print name, param.data
+
+    print("Model summary details")
+    from torchsummary import summary
+    print(summary(model, (14, 64, 64)))
 
 ########################## Main Loop ##########################
     Train(model, data_loaders, args,lossFunction,optimizer,device,scheduler, fp16_scaler, rank)
